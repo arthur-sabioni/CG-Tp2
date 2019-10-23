@@ -14,3 +14,21 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
+1571804888 source:/home/arthur/Desktop/CG-Tp2/Zoopark/main.c
+	<SOIL/SOIL.h>
+	<GL/glew.h>
+	<GL/freeglut.h>
+	<GL/glut.h>
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<math.h>
+	<time.h>
+	"glm.h"
+
+1571792910 /home/arthur/Desktop/CG-Tp2/Zoopark/glm.h
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
