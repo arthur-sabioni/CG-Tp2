@@ -16,6 +16,9 @@
 #define AumentoAngulo_Carrossel 0,05
 #define AnguloEntreCarrinhos M_PI/4
 
+#define LARGURA_DO_MUNDO 1920
+#define ALTURA_DO_MUNDO 1080
+
 float Angulo_RodaGigante = 0;
 float Angulo_Carrossel = 0;
 
@@ -65,20 +68,40 @@ Objeto RodaGigante_base,RodaGigante_roda,RodaGigante_carrinho;
 Objeto Carrossel_estrutura,Carrossel_giragira;
 Objeto BarcoViking_base,BarcoViking_barco;
 
-void redimensiona(int width, int height){
+void redimensiona(int width, int height) {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, LARGURA_DO_MUNDO, 0, ALTURA_DO_MUNDO, -1, 1);
 
+    float razaoAspectoJanela = ((float)width)/height;
+    float razaoAspectoMundo = ((float) LARGURA_DO_MUNDO)/ ALTURA_DO_MUNDO;
+    if (razaoAspectoJanela < razaoAspectoMundo) {
+        float hViewport = width / razaoAspectoMundo;
+        float yViewport = (height - hViewport)/2;
+        glViewport(0, yViewport, width, hViewport);
+    }
+    else if (razaoAspectoJanela > razaoAspectoMundo) {
+        float wViewport = ((float)height) * razaoAspectoMundo;
+        float xViewport = (width - wViewport)/2;
+        glViewport(xViewport, 0, wViewport, height);
+    } else {
+        glViewport(0, 0, width, height);
+    }
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 void listamentoOBJ(Objeto* brinquedo, GLMmodel* modelo){
     glmUnitize(modelo);
     glmFacetNormals(modelo);
-    glmVertexNormals(modelo,90,1);
-    RodaGigante_base.listaVisualizacao = glmList(modelo, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+    glmVertexNormals(modelo,90.0,1);
+    brinquedo->listaVisualizacao = glmList(modelo, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
     float dimensoes_proporcionais[3];
     glmDimensions(modelo,dimensoes_proporcionais);
-    RodaGigante_base.dimensoes.x = dimensoes_proporcionais[0];
-    RodaGigante_base.dimensoes.y = dimensoes_proporcionais[1];
-    RodaGigante_base.dimensoes.z = dimensoes_proporcionais[2];
+    brinquedo->dimensoes.x = dimensoes_proporcionais[0];
+    brinquedo->dimensoes.y = dimensoes_proporcionais[1];
+    brinquedo->dimensoes.z = dimensoes_proporcionais[2];
     free(modelo);
 
 }
@@ -91,7 +114,21 @@ void ListaDeOBJ(){
     listamentoOBJ(&RodaGigante_carrinho,glmReadOBJ("Roda_Gigante/carrinho2.obj"));
 }
 
+void PosicionarOBJ(){
+
+    RodaGigante_base.posicao.x=0;
+    RodaGigante_base.posicao.y=0;
+    RodaGigante_base.posicao.z=0;
+
+}
+
 void desenhaRodaGigante(){
+
+    glPushMatrix();
+    glTranslatef(RodaGigante_base.posicao.x,RodaGigante_base.posicao.y,RodaGigante_base.posicao.z);
+    glCallList(RodaGigante_base.listaVisualizacao);
+    glPopMatrix();
+
 
 }
 
@@ -104,9 +141,27 @@ void desenhaBarcoViking(){
 }
 
 void desenha(){
+
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(1, 1, 1, 1);
+    glMatrixMode(GL_MODELVIEW);
+
+    glColor3f(0,0,0);
+    glutSolidSphere(5,10,10);
     desenhaRodaGigante();
     desenhaCarrossel();
     desenhaBarcoViking();
+
+    glutSwapBuffers();
+}
+
+void atualizaCena(int periodo) {
+
+
+
+    desenha();
+
+    glutTimerFunc(periodo, atualizaCena, periodo);
 }
 
 void AcrescentarAngulos(){
@@ -124,7 +179,7 @@ void AcrescentarAngulos(){
 }
 
 void setup() {
-    glClearColor(1.0, 1.0, 1.0, 0.0); // branco
+    glClearColor(1, 1, 1, 1); // cinza
     glCullFace(GL_BACK);
     // habilita o depth buffer para que a coordenada Z seja usada
     glEnable(GL_DEPTH_TEST);
@@ -147,6 +202,9 @@ void setup() {
     glLightfv(GL_LIGHT1, GL_POSITION, direcaoLuz2);*/
 
     glShadeModel(GL_FLAT);
+
+    ListaDeOBJ();
+    PosicionarOBJ();
 
     AcrescentarAngulos();
 }
@@ -171,9 +229,6 @@ void click(int botao, int estado, int x, int y){
 
 }
 
-void atualizaCena(int periodo) {
-
-}
 
 void main(int argc, char** argv){
 
@@ -182,11 +237,12 @@ void main(int argc, char** argv){
     glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glEnable(GL_DEPTH_TEST);
-    glutInitWindowSize(800,550);
+    glutInitWindowSize(1600,900);
     glutInitWindowPosition (0, 0);
     glutCreateWindow("Zoopark");
 
-    ListaDeOBJ();
+    setup();
+
 
     glutDisplayFunc(desenha);
     glutReshapeFunc(redimensiona);
@@ -199,13 +255,14 @@ void main(int argc, char** argv){
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_CULL_FACE);
 
     glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-    setup();
+    glutTimerFunc(0,atualizaCena,33);
 
     glutMainLoop();
     }
