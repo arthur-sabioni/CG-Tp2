@@ -19,6 +19,23 @@
 #define LARGURA_DO_MUNDO 1920
 #define ALTURA_DO_MUNDO 1080
 
+
+struct coordenadas {
+    double x, y, z, altura, largura;
+};
+
+struct coordenadas p;
+struct coordenadas foco;
+struct coordenadas camera;
+struct coordenadas up;
+
+double phi;
+double teta;
+double rotate;
+
+float buffer[5];
+float enviar[5];
+
 float Angulo_RodaGigante = 0;
 float Angulo_Carrossel = 0;
 
@@ -146,11 +163,19 @@ void desenha(){
     glClearColor(1, 1, 1, 1);
     glMatrixMode(GL_MODELVIEW);
 
-    glColor3f(0,0,0);
-    glutSolidSphere(5,10,10);
-    desenhaRodaGigante();
-    desenhaCarrossel();
-    desenhaBarcoViking();
+    camera.x = 10*sin(phi)*cos(teta);
+    camera.z = 10*sin(phi)*sin(teta);
+    camera.y = 10*cos(phi);
+
+    gluLookAt( camera.x, camera.y, camera.z, 0, 0, 0, up.x, up.y, up.z);
+
+    glColor3f(0.0,0.0,0.0);
+    glPushMatrix();
+        glutSolidSphere(5,10,10);
+    glPopMatrix();
+//    desenhaRodaGigante();
+//    desenhaCarrossel();
+//    desenhaBarcoViking();
 
     glutSwapBuffers();
 }
@@ -214,6 +239,38 @@ void Apertada(unsigned char key, int x, int y){
         case 27: //ESC
             exit(0);
             break;
+        case 'W':
+        case 'w':
+            if(foco.z<101.2)
+            foco.z = foco.z + 0.2;
+            rotate=0;
+            break;
+        case 'S':
+        case 's':
+            if(foco.z>-101.2)
+            foco.z = foco.z - 0.2;
+            rotate= 180;
+            break;
+        case 'A':
+        case 'a':
+            if(foco.x<149.6)
+            foco.x = foco.x + 0.2;
+            rotate= 90;
+            break;
+        case 'D':
+        case 'd':
+            if(foco.x>-149.4)
+            foco.x = foco.x - 0.2;
+            rotate= -90;
+            break;
+        case 'Q':
+        case 'q':
+            if(foco.y<39.0) foco.y = foco.y + 0.2;
+            break;
+        case 'E':
+        case 'e':
+            if(foco.y> -35.4) foco.y = foco.y - 0.2;
+            break;
     }
 }
 
@@ -222,6 +279,12 @@ void Solta(unsigned char key, int x, int y){
 }
 
 void movimentoMouse(int x, int y) {
+  p.x=x;
+  p.y=(ALTURA_DO_MUNDO)-y;
+
+  printf("y : %i \n", y);
+  printf("x: %f\n", p.x);
+  printf("py: %f \n \n", p.y );
 
 }
 
@@ -229,6 +292,29 @@ void click(int botao, int estado, int x, int y){
 
 }
 
+void inicializaCamera(){
+
+  phi=0;
+  teta=0;
+
+  p.x = 0;
+  p.y = 0;
+  p.altura = 10;
+  p.largura = 10;
+
+  foco.x= 0;
+  foco.y= 0;
+  foco.z= 0;
+
+  camera.x=0;
+  camera.y=0;
+  camera.z=0;
+
+  up.x=0;
+  up.y=1;
+  up.z=0;
+
+}
 
 void main(int argc, char** argv){
 
@@ -250,7 +336,6 @@ void main(int argc, char** argv){
     glutKeyboardUpFunc(Solta);
     glutPassiveMotionFunc(movimentoMouse);
     glutMouseFunc(click);
-    glutTimerFunc(0, atualizaCena, 33);
 
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
@@ -261,6 +346,8 @@ void main(int argc, char** argv){
     glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    inicializaCamera();
 
     glutTimerFunc(0,atualizaCena,33);
 
