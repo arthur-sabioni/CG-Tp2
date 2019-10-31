@@ -12,7 +12,7 @@
 
 #define PADRAO 100
 //experimentar valores
-#define AumentoAngulo_RodaGigante 0,01
+#define AumentoAngulo_RodaGigante 1
 #define AumentoAngulo_Carrossel 0,05
 #define AnguloEntreCarrinhos M_PI/4
 
@@ -26,9 +26,12 @@ typedef struct coordenadas {
 
 coordenadas camera;
 coordenadas base_gigante;
+coordenadas chao;
 
 float Angulo_RodaGigante = 0;
 float Angulo_Carrossel = 0;
+
+int camera_posicao=1;
 
 //valores retirados de exemplo do coutinho
 //revisar e modifica-los
@@ -67,7 +70,24 @@ typedef struct vetor_r3{
 
 GLMmodel *RodaGigante_base,*RodaGigante_roda,*RodaGigante_carrinho,
 *Carrossel_estrutura,*Carrossel_giragira,
-*BarcoViking_base,*BarcoViking_barco;
+*BarcoViking_base,*BarcoViking_barco,*chaoObj;
+
+void desenhaChao(GLMmodel* objeto, char* string, coordenadas coordenada){
+    if(objeto == NULL){
+            objeto = glmReadOBJ(string);    //manda pro objeto sua localização
+            if(!objeto)
+                exit(0);
+            glmScale(objeto, 200.0); //o último parâmetro muda o que?
+            glmUnitize(objeto);
+            glmFacetNormals(objeto);
+            glmVertexNormals(objeto, 90.0, 1);  //o que esses parârametros mudam?
+        }
+    glPushMatrix();
+    glTranslatef(coordenada.x, coordenada.y, coordenada.z);
+    glScalef(30,30,30);
+    glmDraw(objeto, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+    glPopMatrix();
+}
 
 void desenhaObjeto(GLMmodel* objeto, char* string, coordenadas coordenada){
     if(objeto == NULL){
@@ -81,9 +101,49 @@ void desenhaObjeto(GLMmodel* objeto, char* string, coordenadas coordenada){
         }
     glPushMatrix();
     glTranslatef(coordenada.x, coordenada.y, coordenada.z);
-    glPopMatrix();
+    glScalef(1,1,1);
     glmDraw(objeto, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+    glPopMatrix();
 }
+
+void desenhaRodaGigante(GLMmodel* objeto1,GLMmodel* objeto2,GLMmodel* objeto3, char* string1,char* string2,char* string3, coordenadas coordenada){
+    if(objeto1 == NULL){
+            objeto1 = glmReadOBJ(string1);    //manda pro objeto sua localização
+            if(!objeto1)
+                exit(0);
+            glmScale(objeto1, 200.0); //o último parâmetro muda o que?
+            glmUnitize(objeto1);
+            glmFacetNormals(objeto1);
+            glmVertexNormals(objeto1, 90.0, 1);  //o que esses parârametros mudam?
+        }
+    if(objeto2 == NULL){
+            objeto2 = glmReadOBJ(string2);    //manda pro objeto sua localização
+            if(!objeto2)
+                exit(0);
+            glmScale(objeto2, 200.0); //o último parâmetro muda o que?
+            glmUnitize(objeto2);
+            glmFacetNormals(objeto2);
+            glmVertexNormals(objeto2, 90.0, 1);  //o que esses parârametros mudam?
+        }
+    if(objeto3 == NULL){
+            objeto3 = glmReadOBJ(string3);    //manda pro objeto sua localização
+            if(!objeto3)
+                exit(0);
+            glmScale(objeto3, 200.0); //o último parâmetro muda o que?
+            glmUnitize(objeto3);
+            glmFacetNormals(objeto3);
+            glmVertexNormals(objeto3, 90.0, 1);  //o que esses parârametros mudam?
+        }
+    glPushMatrix();
+    glTranslatef(coordenada.x, coordenada.y, coordenada.z);
+    glScalef(1,1,1);
+    glmDraw(objeto1, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+        glTranslatef(coordenada.x, coordenada.y-0.1,coordenada.z);
+        glRotatef(Angulo_RodaGigante,1,0,0);
+        glmDraw(objeto2, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+    glPopMatrix();
+}
+
 
 void redimensiona(int width, int height) {
 
@@ -96,10 +156,6 @@ void redimensiona(int width, int height) {
 }
 
 void PosicionarOBJ(){
-
-}
-
-void desenhaRodaGigante(){
 
 }
 
@@ -116,13 +172,14 @@ void desenha(){
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glClearColor(0.8, 0.8, 0.8, 1);
     glLoadIdentity();
-    gluLookAt( 2, 2, 0, 0, 0, 0, 0, 1, 0); //1a pessoa
+    if(camera_posicao==1)
+        gluLookAt( camera.x, camera.y, camera.z, camera.x-4, 0, camera.z, 0, 1, 0); //geral
 
     glColor3f(0.0,0.0,0.0);
     //desenhaObjeto(RodaGigante_base,"Roda_Gigante/base2.obj",base_gigante);
-    desenhaObjeto(RodaGigante_roda,"objetos/grama.obj",base_gigante);
+    desenhaChao(chaoObj,"objetos/grama.obj",chao);
     //desenhaObjeto(RodaGigante_carrinho,"Roda_Gigante/carrinho2.obj",base_gigante);
-//    desenhaRodaGigante();
+    desenhaRodaGigante(RodaGigante_base,RodaGigante_roda,RodaGigante_carrinho,"Roda_Gigante/base2.obj","Roda_Gigante/roda.obj","Roda_Gigante/carrinho2.obj",base_gigante);
 //    desenhaCarrossel();
 //    desenhaBarcoViking();
 
@@ -132,30 +189,35 @@ void desenha(){
 void inicializa_posicoes(){
 
     base_gigante.x=0;
-    base_gigante.y=0;
+    base_gigante.y=0.9;
     base_gigante.z=0;
 
-}
+    chao.x=-10;
+    chao.y=0;
+    chao.z=0;
 
-void atualizaCena(int periodo) {
-
-    glutPostRedisplay();
-    glutTimerFunc(periodo, atualizaCena, periodo);
+    camera.x=4;
+    camera.y=4;
+    camera.z=0;
 
 }
 
 void AcrescentarAngulos(){
     //arruma o angulo da roda gigante
     Angulo_RodaGigante += AumentoAngulo_RodaGigante;
-    if(Angulo_RodaGigante > 2*M_PI){
-        Angulo_RodaGigante -= 2*M_PI;
-    }
 
     //arruma o angulo do carrossel
     Angulo_Carrossel += AumentoAngulo_Carrossel;
     if(Angulo_Carrossel > 2*M_PI){
         Angulo_Carrossel -= 2*M_PI;
     }
+}
+void atualizaCena(int periodo) {
+
+    AcrescentarAngulos();
+    glutPostRedisplay();
+    glutTimerFunc(periodo, atualizaCena, periodo);
+
 }
 
 void setup() {
@@ -180,6 +242,22 @@ void Apertada(unsigned char key, int x, int y){
     switch(key){
         case 27: //ESC
             exit(0);
+            break;
+        case 'w':
+        case 'W':
+            camera.x--;
+            break;
+        case 'a':
+        case 'A':
+            camera.z++;
+            break;
+        case 's':
+        case 'S':
+            camera.x++;
+            break;
+        case 'd':
+        case 'D':
+            camera.z--;
             break;
     }
 }
