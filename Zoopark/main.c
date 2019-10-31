@@ -74,7 +74,7 @@ void desenhaObjeto(GLMmodel* objeto, char* string, coordenadas coordenada){
             objeto = glmReadOBJ(string);    //manda pro objeto sua localização
             if(!objeto)
                 exit(0);
-            glmScale(objeto, 90.0); //o último parâmetro muda o que?
+            glmScale(objeto, 200.0); //o último parâmetro muda o que?
             glmUnitize(objeto);
             glmFacetNormals(objeto);
             glmVertexNormals(objeto, 90.0, 1);  //o que esses parârametros mudam?
@@ -116,12 +116,12 @@ void desenha(){
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glClearColor(0.8, 0.8, 0.8, 1);
     glLoadIdentity();
-    gluLookAt( 2, 0, 0, 0, 0, 0, 0, 1, 0); //1a pessoa
+    gluLookAt( 2, 2, 0, 0, 0, 0, 0, 1, 0); //1a pessoa
 
     glColor3f(0.0,0.0,0.0);
-    desenhaObjeto(RodaGigante_base,"Roda_Gigante/base2.obj",base_gigante);
-    desenhaObjeto(RodaGigante_roda,"Roda_Gigante/roda.obj",base_gigante);
-    desenhaObjeto(RodaGigante_carrinho,"Roda_Gigante/carrinho2.obj",base_gigante);
+    //desenhaObjeto(RodaGigante_base,"Roda_Gigante/base2.obj",base_gigante);
+    desenhaObjeto(RodaGigante_roda,"objetos/grama.obj",base_gigante);
+    //desenhaObjeto(RodaGigante_carrinho,"Roda_Gigante/carrinho2.obj",base_gigante);
 //    desenhaRodaGigante();
 //    desenhaCarrossel();
 //    desenhaBarcoViking();
